@@ -15,7 +15,22 @@ public:
 
 	struct SDL_Window* _window{ nullptr };
 
-	static VulkanEngine& Get();
+	// main vulkan instances
+	VkInstance _instance;
+	VkDebugUtilsMessengerEXT _debug_messenger;
+	VkPhysicalDevice _chosenGPU;
+	VkDevice _device;
+	VkSurfaceKHR _surface;
+
+	// swapchain stuff
+	VkSwapchainKHR _swapchain;
+	VkFormat _swapchainImageFormat;
+	std::vector<VkImage> _swapchainImages;
+	std::vector<VkImageView> _swapchainImageViews;
+	VkExtent2D _swapchainExtend;
+
+public:
+    static VulkanEngine& Get();
 
 	//initializes everything in the engine
 	void init();
@@ -29,14 +44,11 @@ public:
 	//run main loop
 	void run();
 private:
-	VkInstance _instance;
-	VkDebugUtilsMessengerEXT _debug_messenger;
-	VkPhysicalDevice _chosenGPU;
-	VkDevice _device;
-	VkSurfaceKHR _surface;
-private:
 	void init_vulkan();
 	void init_swapchain();
 	void init_commands();
 	void init_sync_structures();
+
+	void create_swapchain(uint32_t width, uint32_t height);
+	void destroy_swapchain();
 };
