@@ -5,6 +5,23 @@
 
 #include <vk_types.h>
 
+struct DeletionQueue
+{
+	std::deque<std::function<void()>> deletors;
+
+	void push_function(std::function<void()>&& function) {
+		deletors.push_back(function);
+	}
+
+	void flush() {
+		for (auto it = deletors.rbegin(); it != deletors.rend(); it++)
+		{
+			(*it)();
+		}
+		deletors.clear();
+	}
+};
+
 struct FrameData {
 	VkCommandPool _commandPool;
 	VkCommandBuffer _mainCommandBuffer;
@@ -12,6 +29,7 @@ struct FrameData {
 	VkSemaphore _swapchainSemaphore;
 	VkSemaphore _renderSemaphore;
 	VkFence _renderFence;
+	DeletionQueue _deletionQueue;
 };
 
 constexpr unsigned int FRAME_OVERLAP = 2;
@@ -38,12 +56,19 @@ public:
 	VkFormat _swapchainImageFormat;
 	std::vector<VkImage> _swapchainImages;
 	std::vector<VkImageView> _swapchainImageViews;
-	VkExtent2D _swapchainExtend;
+	VkExtent2D _swapchainExtent;
 
 	FrameData _frames[FRAME_OVERLAP];
 	FrameData& get_current_frame() { return _frames[_frameNumber % FRAME_OVERLAP]; };
 	VkQueue _graphicsQueue;
 	uint32_t _graphicsQueueFamily;
+
+	DeletionQueue _mainDeletionQueue;
+
+	VmaAllocator _allocator;
+
+	AllocatedImage _drawImage;
+	VkExtent2D _drawExtent;
 public:
     static VulkanEngine& Get();
 
@@ -66,4 +91,6 @@ private:
 
 	void create_swapchain(uint32_t width, uint32_t height);
 	void destroy_swapchain();
+
+	void draw_background(VkCommandBuffer cmd);
 };
