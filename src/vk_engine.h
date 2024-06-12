@@ -77,6 +77,12 @@ public:
 
 	VkPipeline _gradientPipeline;
 	VkPipelineLayout _gradientPipelineLayout;
+
+	VkFence _immFence;
+	VkCommandBuffer _immCommandBuffer;
+	VkCommandPool _immCommandPool;
+
+	void immediate_submit(std::function<void(VkCommandBuffer cmd)>&& function);
 public:
     static VulkanEngine& Get();
 
@@ -106,4 +112,6 @@ private:
 	void destroy_swapchain();
 
 	void draw_background(VkCommandBuffer cmd);
+
+	void init_imgui();
 };
